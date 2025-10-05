@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from routers import jobs, analysis
+from routers.tts import router as tts_router
 
 # FastAPI app
 app = FastAPI(
@@ -11,6 +12,7 @@ app = FastAPI(
 # Include routers
 app.include_router(jobs.router)
 app.include_router(analysis.router)
+app.include_router(tts_router)
 
 @app.get("/")
 def root():
