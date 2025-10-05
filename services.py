@@ -3,7 +3,7 @@ import os
 from typing import List
 from google import genai
 from google.genai import types
-from models import RawJob, JobAnalysis, QuestionSet, QuestionGenerationRequest, RecommendationReport, LearningPlanRequest, ScoreReport, ScoringRequest
+from models import RawJob, JobAnalysis, QuestionSet, QuestionGenerationRequest, RecommendationReport, LearningPlanRequest, ScoreReport, ScoringRequest, GuidanceRequest, GuidanceResponse
 
 # Environment variables
 RAPIDAPI_HOST = "jsearch.p.rapidapi.com"
@@ -268,4 +268,50 @@ Rules (MUST FOLLOW):
     except Exception as e:
         raise Exception(f"Question scoring failed: {str(e)}")
 
+
+
+def generate_guidance(request: GuidanceRequest) -> GuidanceResponse:
+    """Generate concise coaching guidance (<150 words) using main question, history, and new user query."""
+    SYSTEM_PROMPT = (
+        "You are given a main question to serve as context:\n"
+        "Main Question: {main_question}\n\n"
+        "So far, the conversation history is as follows:{history_str}\n\n"
+        "Now the user asks a new follow-up question related to the above:\n"
+        "User: {new_user_query}\n\n"
+        "Your role:\n"
+        "1. Use the main question as the guiding context for the discussion.\n"
+        "2. Do not provide the direct answer to the user's follow-up; instead, help the user think through the problem. Make the answer precise and concised. DON'T OVER EXPLAIN\n"
+        "3. Offer guiding questions, suggest frameworks, or point to key concepts the user should explore.\n"
+        "4. If the user seems stuck or unclear, propose specific subtopics or steps that could lead them closer to answering their own question.\n"
+        "5. Keep your guidance concise, constructive, and well-structured.\n"
+        "6. Ensure your response is less than 75 words."
+    )
+
+    user_prompt = SYSTEM_PROMPT.format(
+        main_question=request.main_question,
+        history_str=f"\n{request.history_str}\n" if request.history_str else "",
+        new_user_query=request.new_user_query,
+    )
+
+    # Ask for short text output and enforce word length with model selection
+    config = types.GenerateContentConfig(
+        response_mime_type="text/plain",
+    )
+
+    try:
+        gemini_response = ai_client.models.generate_content(
+            model='models/gemini-flash-lite-latest',
+            contents=[{"role": "user", "parts": [{"text": user_prompt}]}],
+            config=config,
+        )
+
+        text = gemini_response.text.strip()
+        # Hard cap to approximately 150 words if model exceeds
+        words = text.split()
+        if len(words) > 150:
+            text = " ".join(words[:150])
+
+        return GuidanceResponse(guidance=text)
+    except Exception as e:
+        raise Exception(f"Guidance generation failed: {str(e)}")
 

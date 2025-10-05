@@ -1,5 +1,8 @@
-from fastapi import FastAPI
-from routers import jobs, analysis, questions, learning, scores
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import JSONResponse
+from routers import jobs, analysis, questions, learning, scores, tts
+from routers import guidance
+from fastapi.middleware.cors import CORSMiddleware
 
 # FastAPI app
 app = FastAPI(
@@ -9,11 +12,32 @@ app = FastAPI(
 )
 
 # Include routers
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # allows all origins (use specific origins in production!)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(jobs.router)
 app.include_router(analysis.router)
 app.include_router(questions.router)
 app.include_router(learning.router)
 app.include_router(scores.router)
+app.include_router(tts.router)
+app.include_router(guidance.router)
+
+# Custom exception handler for UnicodeDecodeError
+@app.exception_handler(UnicodeDecodeError)
+async def unicode_decode_exception_handler(request: Request, exc: UnicodeDecodeError):
+    return JSONResponse(
+        status_code=400,
+        content={
+            "detail": "Audio processing error. The audio data contains invalid characters that cannot be decoded. Please try with a different audio file or format."
+        }
+    )
 
 @app.get("/")
 def root():

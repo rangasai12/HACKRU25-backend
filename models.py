@@ -159,3 +159,12 @@ class ScoreReport(BaseModel):
 
 class ScoringRequest(BaseModel):
     question_set: QuestionSet
+
+# Guidance/coach models
+class GuidanceRequest(BaseModel):
+    main_question: str
+    history_str: str
+    new_user_query: str
+
+class GuidanceResponse(BaseModel):
+    guidance: str

@@ -4,3 +4,5 @@ requests==2.32.5
 pydantic==2.11.10
 google-genai==0.8.0
 python-multipart==0.0.12
+elevenlabs==1.14.0
+python-dotenv==1.0.1

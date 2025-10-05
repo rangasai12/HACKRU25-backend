@@ -7,12 +7,12 @@ router = APIRouter(prefix="/jobs", tags=["jobs"])
 
 @router.get("", response_model=List[RawJob])
 def get_jobs(
-    query: str = "Software Developer Jobs in USA", 
+    query: str = "Software Engineering Jobs in  New York City", 
     page: int = 1, 
     num_pages: int = 1, 
     country: str = "us", 
     date_posted: str = "today", 
-    job_requirements: str = "under_3_years_experience"
+    job_requirements: str = "over_3_years_experience"
 ):
     """Get raw job data from JSearch API without AI processing."""
     try:
