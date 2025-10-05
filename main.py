@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import jobs, analysis
+from routers import jobs, analysis, questions, learning, scores
 
 # FastAPI app
 app = FastAPI(
@@ -11,6 +11,9 @@ app = FastAPI(
 # Include routers
 app.include_router(jobs.router)
 app.include_router(analysis.router)
+app.include_router(questions.router)
+app.include_router(learning.router)
+app.include_router(scores.router)
 
 @app.get("/")
 def root():
@@ -30,3 +33,6 @@ def root():
 # 3. Available endpoints:
 #    - GET /jobs - Get raw job data
 #    - POST /analysis/job - Analyze job description with AI
+#    - POST /questions - Generate interview questions
+#    - POST /learning - Generate learning recommendations
+#    - POST /scores - Score interview questions
